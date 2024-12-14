@@ -1,3 +1,4 @@
+#include <run.h>
 #include <build.h>
 #include <toml.h>
 #include <init.h>
@@ -25,15 +26,15 @@ void version() {
            "See the GitHub repository for more information.\n");
 }
 
-int run_command(char *path, char *cmd) {
+int run_command(char *path, char *cmd, char **args) {
     if (!strcmp(cmd, "build"))
         return build_project();
     else if (!strcmp(cmd, "init"))
         init_project();
     else if (!strcmp(cmd, "run"))
-        printf("TODO: Implement run\n");
+        build_and_run(args);
     else if (!strcmp(cmd, "runonly"))
-        printf("TODO: Implement runonly\n");
+        return run_project(args);
     else if (!strcmp(cmd, "version"))
         version();
     else if (!strcmp(cmd, "help"))
@@ -52,10 +53,7 @@ int main(int argc, char **argv) {
         printf("Not enough arguments.\n");
         help(argv[0]);
         return 1;
-    } else if (argc == 2)
-        return run_command(argv[0], argv[1]);
-    else {
-        printf("Too many arguments. Try running:\n%s help\n", argv[0]);
-        return 1;
-    }
+    } else
+        return run_command(argv[0], argv[1], &argv[2]);
+    return 0;
 }

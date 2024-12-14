@@ -11,11 +11,11 @@ const char *configf_default = "[package]\n"
                               "name = \"%s\"\n"
                               "version = \"0.0.1\"\n"
                               "edition = \"2024\"\n"
-                              "compiler = \"gcc\"";
+                              "compiler = \"gcc\"\n";
 
 const char *mainc_default = "#include <stdio.h>\n\n"
                             "int main() {\n"
-                            "\tprintf(\"Hello world from break!\");\n"
+                            "\tprintf(\"Hello world from break!\\n\");\n"
                             "}\n";
 
 void init_project() {

@@ -25,12 +25,25 @@ int read_toml(ConfigFile *cfg) {
     return 0;
 }
 
-void compile_file(ConfigFile *cfg, char *filename) {
-    (void) cfg;
-    printf("Compiling \"%s\"\n", filename);
+void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
+    size_t filename_len = strlen(filename);
+    size_t fmtlen = strlen(cfg->compiler) + strlen(" -I include -c ") + filename_len * 2 + strlen(" -o ") + 1;
+    char *buf = (char*) malloc(fmtlen);
+    char *obj_filename = (char*) malloc(filename_len + 3);
+    strcpy(obj_filename, filename);
+    memcpy(obj_filename, "obj", 3);
+    memcpy(obj_filename + filename_len, ".o\0", 3);
+    sprintf(buf, "%s -I include -c %s -o %s", cfg->compiler, filename, obj_filename);
+    printf(" -> %s\n", buf);
+    // TODO: Stop recalculating string lengths
+    *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);
+    sprintf(*linker_list, "%s%s ", *linker_list, obj_filename);
+    system(buf);
+    free(obj_filename);
+    free(buf);
 }
 
-void compile_dir(ConfigFile *cfg, char *dirname) {
+void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
     DIR *dir = opendir(dirname);
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
@@ -39,12 +52,21 @@ void compile_dir(ConfigFile *cfg, char *dirname) {
             size_t fmtlen = strlen(dirname) + strlen(entry->d_name) + 2;
             char *full_dir = (char*) malloc(fmtlen);
             sprintf(full_dir, "%s/%s", dirname, entry->d_name);
-            printf("Enter directory: %s\n", full_dir);
-            compile_dir(cfg, full_dir);
-            printf("Exit directory: %s\n", full_dir);
+            char *full_dir_obj = (char*) malloc(fmtlen);
+            strcpy(full_dir_obj, full_dir);
+            memcpy(full_dir_obj, "obj", 3);
+            mkdir(full_dir_obj, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            printf(" -> Enter directory: %s\n", full_dir);
+            compile_dir(cfg, full_dir, linker_list);
+            printf(" -> Exit directory: %s\n", full_dir);
+            free(full_dir_obj);
             free(full_dir);
         } else if (entry->d_type == DT_REG) {
-            compile_file(cfg, entry->d_name);
+            size_t fmtlen = strlen(dirname) + strlen(entry->d_name) + 2;
+            char *full_filename = (char*) malloc(fmtlen);
+            sprintf(full_filename, "%s/%s", dirname, entry->d_name);
+            compile_file(cfg, full_filename, linker_list);
+            free(full_filename);
         }
     }
 }
@@ -60,8 +82,19 @@ int build_project() {
         return 1;
     }
     mkdir("target", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    mkdir("target/obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    compile_dir(&cfg, "src");
+    mkdir("obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    char *linker_list = (char*) malloc(1);
+    linker_list[0] = 0;
+    compile_dir(&cfg, "src", &linker_list);
+    size_t link_cmd_len = strlen(cfg.compiler) + strlen(" -o ") + strlen(cfg.project_name) + strlen(linker_list) + 2;
+    if (cfg.freestanding)
+        link_cmd_len += strlen("-ffreestanding -nostdlib");
+    char *link_cmd = (char*) malloc(link_cmd_len);
+    char *freestanding_flags = (cfg.freestanding) ? "-ffreestanding -nostdlib" : "";
+    sprintf(link_cmd, "%s -o target/%s %s%s", cfg.compiler, cfg.project_name, linker_list, freestanding_flags);
+    printf(" -> %s\n", link_cmd);
+    system(link_cmd);
+    free(link_cmd);
     free(cfg.project_name);
     return 0;
 }
