@@ -94,6 +94,7 @@ int build_project(char **args, ConfigFile *cfg_ret) {
         return 1;
     }
     char *output_dir = (cfg.release) ? "release" : "debug";
+    mkdir("target", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir("target/release", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir("target/debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir("obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
