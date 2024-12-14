@@ -15,7 +15,11 @@ int read_toml(ConfigFile *cfg) {
     }
     fseek(f, 0, SEEK_END);
     struct stat lenbuf;
-    fstat(fileno(f), &lenbuf);
+    if (fstat(fileno(f), &lenbuf) < 0) {
+        printf("fstat failed.\n");
+        fclose(f);
+        return 1;
+    }
     fseek(f, 0, SEEK_SET);
     char *buf = (char*) malloc(lenbuf.st_size);
     fread(buf, lenbuf.st_size, 1, f);
@@ -96,12 +100,12 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     char *linker_list = (char*) malloc(1);
     linker_list[0] = 0;
     compile_dir(&cfg, "src", &linker_list);
-    size_t link_cmd_len = strlen(cfg.compiler) + strlen(output_dir) + strlen(" -o ") + strlen(cfg.project_name) + strlen(linker_list) + 3;
+    size_t link_cmd_len = strlen(cfg.compiler) + strlen(" -o target// ") + strlen(output_dir) + strlen(cfg.project_name) + strlen(linker_list) + 3;
     if (cfg.freestanding)
         link_cmd_len += strlen("-ffreestanding -nostdlib");
     char *link_cmd = (char*) malloc(link_cmd_len);
     char *freestanding_flags = (cfg.freestanding) ? "-ffreestanding -nostdlib" : "";
-    sprintf(link_cmd, "%s -o target/%s/%s %s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags);
+    snprintf(link_cmd, link_cmd_len, "%s -o target/%s/%s %s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags);
     printf(" -> %s\n", link_cmd);
     system(link_cmd);
     free(link_cmd);

@@ -16,7 +16,7 @@ int run_project(char **argv, int is_release) {
     ConfigFile cfg;
     if (read_toml(&cfg)) return 1;
     char *exec_dir = (is_release) ? "release" : "debug";
-    char *path = (char*) malloc(strlen("./target/") + strlen(exec_dir)+ strlen(cfg.project_name) + 2);
+    char *path = (char*) malloc(strlen("./target/") + strlen(exec_dir) + strlen(cfg.project_name) + 2);
     sprintf(path, "./target/%s/%s", exec_dir, cfg.project_name);
     size_t argc = 0;
     while (argv[argc]) argc++;
