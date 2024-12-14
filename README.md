@@ -1,11 +1,12 @@
 # break
 
-A Cargo-like build system for C.
-
-The goal is to make the project self hosting (at some point™). Usage and build instructions will be provided once the project is complete enough.
+A Cargo-like build system for C, which is self hosting - meaning it can build itself!
 
 ## Usage
 ### Installation
+#### First time installing
+The first time that you install `break`, you almost certainly won't have a copy of `break` already on your system, meaning you'll need to build with `make` instead.
+
 To install `break` to your system, run the following commands. Note that `break` only works on Linux systems.
 
 ```bash
@@ -15,6 +16,16 @@ make install
 ```
 
 You will likely be asked for a password for root privileges, this is required to install it to your `/usr/bin` directory.
+
+#### Self hosting (building `break` with itself)
+You'll still need root privileges to run some of these commands for the same reasons described above, and `break` still only works on Linux systems.
+
+```bash
+git clone https://github.com/UnmappedStack/break
+cd break
+breakpkg build --release
+sudo cp target/release/breakpkg /usr/bin/breakpkg
+```
 
 ### Usage
 There are a few basic commands you can use with `break`:
