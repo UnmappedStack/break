@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = clang
-CFLAGS = -Iinclude -Wall -g
+CFLAGS = -Iinclude -Wall -g -Werror
 
 # Directories
 SRC_DIR = src
