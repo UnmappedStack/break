@@ -1,6 +1,5 @@
-#include <stdlib.h>
+#include <build.h>
 #include <toml.h>
-#include <sys/stat.h>
 #include <init.h>
 #include <string.h>
 #include <stdio.h>
@@ -27,24 +26,9 @@ void version() {
 }
 
 int run_command(char *path, char *cmd) {
-    if (!strcmp(cmd, "build")) {
-        printf("TODO: Implement build. Running some tests.\n");
-        FILE *f = fopen("break.toml", "r");
-        if (!f) {
-            printf("Couldn't find break.toml, it doesn't exist.\n");
-            return 1;
-        }
-        fseek(f, 0, SEEK_END);
-        struct stat lenbuf;
-        fstat(fileno(f), &lenbuf);
-        fseek(f, 0, SEEK_SET);
-        char *buf = (char*) malloc(lenbuf.st_size);
-        fread(buf, lenbuf.st_size, 1, f);
-        ConfigFile cfg = parse_toml(buf);
-        free(cfg.project_name);
-        free(buf);
-        fclose(f);
-    } else if (!strcmp(cmd, "init"))
+    if (!strcmp(cmd, "build"))
+        return build_project();
+    else if (!strcmp(cmd, "init"))
         init_project();
     else if (!strcmp(cmd, "run"))
         printf("TODO: Implement run\n");

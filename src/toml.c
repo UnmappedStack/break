@@ -36,7 +36,6 @@ ConfigFile parse_toml(char *contents) {
             char *val = contents;
             while (*contents != '"') contents++;
             *contents = 0;
-            printf("Found option \"%s\" with value \"%s\"\n", option, val);
             skip_line = true;
             if (!strcmp(option, "name")) {
                 cfg.project_name = (char*) malloc(strlen(val) + 1);
