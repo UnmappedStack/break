@@ -30,6 +30,6 @@ int run_project(char **argv) {
 }
 
 int build_and_run(char **argv) {
-    if (build_project()) return 1;
+    if (build_project(argv)) return 1;
     return run_project(argv);
 }

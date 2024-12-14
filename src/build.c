@@ -26,14 +26,15 @@ int read_toml(ConfigFile *cfg) {
 }
 
 void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
+    char opt_level = (cfg->release) ? '2' : '0';
     size_t filename_len = strlen(filename);
-    size_t fmtlen = strlen(cfg->compiler) + strlen(" -I include -c ") + filename_len * 2 + strlen(" -o ") + 1;
+    size_t fmtlen = strlen(cfg->compiler) + strlen(" -I include -c ") + filename_len * 2 + strlen(" -o ") + 5;
     char *buf = (char*) malloc(fmtlen);
     char *obj_filename = (char*) malloc(filename_len + 3);
     strcpy(obj_filename, filename);
     memcpy(obj_filename, "obj", 3);
     memcpy(obj_filename + filename_len, ".o\0", 3);
-    sprintf(buf, "%s -I include -c %s -o %s", cfg->compiler, filename, obj_filename);
+    sprintf(buf, "%s -I include -c %s -o %s -O%c", cfg->compiler, filename, obj_filename, opt_level);
     printf(" -> %s\n", buf);
     // TODO: Stop recalculating string lengths
     *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);
@@ -71,27 +72,34 @@ void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
     }
 }
 
-int build_project() {
+int build_project(char **args) {
     ConfigFile cfg;
     if (read_toml(&cfg)) {
         printf("Failed to parse toml\n");
         return 1;
     }
+    while (*args) {
+        if (!strcmp(*args, "--release"))
+            cfg.release = true;
+        args++;
+    }
     if (!cfg.compiler[0]) {
         printf("No compiler specified in break.toml! Could not build.");
         return 1;
     }
-    mkdir("target", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    char *output_dir = (cfg.release) ? "release" : "debug";
+    mkdir("target/release", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir("target/debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir("obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     char *linker_list = (char*) malloc(1);
     linker_list[0] = 0;
     compile_dir(&cfg, "src", &linker_list);
-    size_t link_cmd_len = strlen(cfg.compiler) + strlen(" -o ") + strlen(cfg.project_name) + strlen(linker_list) + 2;
+    size_t link_cmd_len = strlen(cfg.compiler) + strlen(output_dir) + strlen(" -o ") + strlen(cfg.project_name) + strlen(linker_list) + 3;
     if (cfg.freestanding)
         link_cmd_len += strlen("-ffreestanding -nostdlib");
     char *link_cmd = (char*) malloc(link_cmd_len);
     char *freestanding_flags = (cfg.freestanding) ? "-ffreestanding -nostdlib" : "";
-    sprintf(link_cmd, "%s -o target/%s %s%s", cfg.compiler, cfg.project_name, linker_list, freestanding_flags);
+    sprintf(link_cmd, "%s -o target/%s/%s %s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags);
     printf(" -> %s\n", link_cmd);
     system(link_cmd);
     free(link_cmd);

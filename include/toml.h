@@ -7,6 +7,7 @@ typedef struct {
     char version[9];
     char edition[4];
     bool freestanding;
+    bool release;
 } ConfigFile;
 
 ConfigFile parse_toml(char *contents);

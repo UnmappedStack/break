@@ -28,7 +28,7 @@ void version() {
 
 int run_command(char *path, char *cmd, char **args) {
     if (!strcmp(cmd, "build"))
-        return build_project();
+        return build_project(args);
     else if (!strcmp(cmd, "init"))
         init_project();
     else if (!strcmp(cmd, "run"))
