@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdio.h>
 
 void help(char *path) {
@@ -11,8 +12,30 @@ void help(char *path) {
             path, path, path, path, path);
 }
 
-void run_command(char *cmd) {
-    printf("TODO: Implement run_command\n");
+void version() {
+    printf("break 0.0.1\n"
+           "Copyright (C) 2024 Jake Steinburger (UnmappedStack) under the Mozilla Public License 2.0\n"
+           "See the GitHub repository for more information.\n");
+}
+
+int run_command(char *path, char *cmd) {
+    if (!strcmp(cmd, "build"))
+        printf("TODO: Implement build\n");
+    else if (!strcmp(cmd, "run"))
+        printf("TODO: Implement run\n");
+    else if (!strcmp(cmd, "runonly"))
+        printf("TODO: Implement runonly\n");
+    else if (!strcmp(cmd, "version"))
+        version();
+    else if (!strcmp(cmd, "help"))
+        help(path);
+    else {
+        printf("Invalid command: %s\n"
+               "Try running:\n"
+               "%s help\n", cmd, path);
+        return 1;
+    }
+    return 0;
 }
 
 int main(int argc, char **argv) {
@@ -21,7 +44,7 @@ int main(int argc, char **argv) {
         help(argv[0]);
         return 1;
     } else if (argc == 2)
-        run_command(argv[1]);
+        return run_command(argv[0], argv[1]);
     else {
         printf("Too many arguments. Try running:\n%s help\n", argv[0]);
         return 1;
