@@ -72,7 +72,9 @@ void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
     }
 }
 
-int build_project(char **args) {
+// If cfg_ret is a valid address, it'll write the cfg to it, but with project_name freed.
+// If it's NULL, it won't write anything.
+int build_project(char **args, ConfigFile *cfg_ret) {
     ConfigFile cfg;
     if (read_toml(&cfg)) {
         printf("Failed to parse toml\n");
@@ -104,5 +106,7 @@ int build_project(char **args) {
     system(link_cmd);
     free(link_cmd);
     free(cfg.project_name);
+    if (cfg_ret)
+        *cfg_ret = cfg;
     return 0;
 }

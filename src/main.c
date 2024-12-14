@@ -28,13 +28,13 @@ void version() {
 
 int run_command(char *path, char *cmd, char **args) {
     if (!strcmp(cmd, "build"))
-        return build_project(args);
+        return build_project(args, NULL);
     else if (!strcmp(cmd, "init"))
         init_project();
     else if (!strcmp(cmd, "run"))
         build_and_run(args);
     else if (!strcmp(cmd, "runonly"))
-        return run_project(args);
+        return run_project(args, 2);
     else if (!strcmp(cmd, "version"))
         version();
     else if (!strcmp(cmd, "help"))
