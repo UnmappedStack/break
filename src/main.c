@@ -2,14 +2,18 @@
 #include <stdio.h>
 
 void help(char *path) {
-    printf("Usage:\n"
-           "%s build   -> builds the program and outputs it to ./target/debug/program_name\n"
-           "%s run     -> builds the program and runs it\n"
-           "%s runonly -> runs the program without rebuilding it\n"
-           "%s version -> display version information\n"
-           "%s help    -> shows this help information\n\n"
-           "Note that configuration of the build system itself is done in break.toml.\n",
-            path, path, path, path, path);
+    const char *commands[] = {
+            "%s init    -> creates a new break project in the current directory.\n",
+            "%s build   -> builds the program and outputs it to ./target/debug/program_name\n",
+            "%s run     -> builds the program and runs it\n",
+            "%s runonly -> runs the program without rebuilding it\n",
+            "%s version -> display version information\n",
+            "%s help    -> shows this help information\n\n",
+    };
+    printf("Usage:\n");
+    size_t num_commands = sizeof(commands) / sizeof(commands[0]);
+    for (size_t i = 0; i < num_commands; i++) printf(commands[i], path);
+    printf("Note that configuration of the build system itself is done in break.toml.\n");
 }
 
 void version() {
@@ -21,6 +25,8 @@ void version() {
 int run_command(char *path, char *cmd) {
     if (!strcmp(cmd, "build"))
         printf("TODO: Implement build\n");
+    if (!strcmp(cmd, "init"))
+        printf("TODOL Implement init\n");
     else if (!strcmp(cmd, "run"))
         printf("TODO: Implement run\n");
     else if (!strcmp(cmd, "runonly"))
