@@ -1,3 +1,4 @@
+#include <init.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -26,7 +27,7 @@ int run_command(char *path, char *cmd) {
     if (!strcmp(cmd, "build"))
         printf("TODO: Implement build\n");
     if (!strcmp(cmd, "init"))
-        printf("TODOL Implement init\n");
+        init_project();
     else if (!strcmp(cmd, "run"))
         printf("TODO: Implement run\n");
     else if (!strcmp(cmd, "runonly"))
