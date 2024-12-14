@@ -7,7 +7,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 # Output executable
-TARGET = break
+TARGET = breakpkg
 
 # Find all .c files in the src directory and corresponding .o files in the obj directory
 SRCS = $(wildcard $(SRC_DIR)/*.c)
