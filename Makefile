@@ -32,4 +32,7 @@ clean:
 run: all
 	 ./$(TARGET)
 
+install: all
+		 sudo cp breakpkg /usr/bin/breakpkg
+
 .PHONY: all clean
