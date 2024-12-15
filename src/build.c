@@ -33,12 +33,15 @@ void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
     char opt_level = (cfg->release) ? '2' : '0';
     size_t filename_len = strlen(filename);
     size_t fmtlen = strlen(cfg->compiler) + strlen(" -I include -c ") + filename_len * 2 + strlen(" -o ") + 5;
+    if (cfg->warnerror)
+        fmtlen += strlen(" -Wall -Werror");
     char *buf = (char*) malloc(fmtlen);
     char *obj_filename = (char*) malloc(filename_len + 3);
     strcpy(obj_filename, filename);
     memcpy(obj_filename, "obj", 3);
     memcpy(obj_filename + filename_len, ".o\0", 3);
-    sprintf(buf, "%s -I include -c %s -o %s -O%c", cfg->compiler, filename, obj_filename, opt_level);
+    char *err_options = (cfg->warnerror) ? " -Wall -Werror" : "";
+    sprintf(buf, "%s -I include -c %s -o %s -O%c%s", cfg->compiler, filename, obj_filename, opt_level, err_options);
     printf(" -> %s\n", buf);
     // TODO: Stop recalculating string lengths
     *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);

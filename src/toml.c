@@ -40,6 +40,9 @@ ConfigFile parse_toml(char *contents) {
             if (!strcmp(option, "name")) {
                 cfg.project_name = (char*) malloc(strlen(val) + 1);
                 strcpy(cfg.project_name, val);
+            } else if (!strcmp(option, "warnerror")) {
+                if (!strcmp(val, "true"))
+                    cfg.warnerror = true;
             } else if (!strcmp(option, "freestanding")) {
                 if (!strcmp(val, "true"))
                     cfg.freestanding = true;
