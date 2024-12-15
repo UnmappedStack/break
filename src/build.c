@@ -128,6 +128,8 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     free(link_cmd);
     free(cfg.project_name);
     free(cfg.packages);
+    if (cfg.ccflags) free(cfg.ccflags);
+    if (cfg.ldflags) free(cfg.ldflags);
     if (cfg_ret)
         *cfg_ret = cfg;
     return 0;
