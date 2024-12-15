@@ -76,6 +76,22 @@ ConfigFile parse_toml(char *contents) {
                 if (!strcmp(option, "name")) {
                     cfg.project_name = (char*) malloc(strlen(val) + 1);
                     strcpy(cfg.project_name, val);
+                } else if (!strcmp(option, "ccflags")) {
+                    if (cfg.ccflags) {
+                        printf("TODO: Allow ccflags to be specified multiple times. This feature is not yet implemented.\n");
+                        exit(1);
+                    }
+                    size_t ccflags_len = strlen(val) + 2;
+                    cfg.ccflags = (char*) malloc(ccflags_len);
+                    snprintf(cfg.ccflags, ccflags_len, " %s", val);
+                } else if (!strcmp(option, "ldflags")) {
+                    if (cfg.ldflags) {
+                        printf("TODO: Allow ldflags to be specified multiple times. This feature is not yet implemented.\n");
+                        exit(1);
+                    }
+                    size_t ldflags_len = strlen(val) + 2;
+                    cfg.ldflags = (char*) malloc(ldflags_len);
+                    snprintf(cfg.ldflags, ldflags_len, " %s", val);
                 } else if (!strcmp(option, "warnerror")) {
                     if (!strcmp(val, "true"))
                         cfg.warnerror = true;

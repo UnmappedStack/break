@@ -74,6 +74,13 @@ The compiler that you use must allow GCC-like command line arguments. I personal
 
 `break` ignores the value on the right in the dependencies and only cares about the name of the package, so you can put anything in the value. In the example above, it sets the value to a brief description of the package which is what I recommend doing. Package names are in the same format as how you would pass them to GCC or Clang - starting with an `l` then the name of the package. It must already be installed on your system.
 
+You can also use custom linker and compiler flags with `ldflags` and `ccflags` options, like so:
+
+```toml
+ldflags = "put the linker flags here"
+ccflags = "put the compiler flags here"
+```
+
 ## License
 
 This project is under the Mozilla Public License. See `LICENSE` for more information.

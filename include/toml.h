@@ -10,6 +10,8 @@ typedef struct {
     bool release;
     bool warnerror;
     char *packages;
+    char *ccflags;
+    char *ldflags;
 } ConfigFile;
 
 ConfigFile parse_toml(char *contents);

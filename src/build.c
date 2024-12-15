@@ -35,13 +35,16 @@ void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
     size_t fmtlen = strlen(cfg->compiler) + strlen(" -I include -c ") + filename_len * 2 + strlen(" -o ") + 5;
     if (cfg->warnerror)
         fmtlen += strlen(" -Wall -Werror");
+    if (cfg->ccflags)
+        fmtlen += strlen(cfg->ccflags) + 2;
     char *buf = (char*) malloc(fmtlen);
     char *obj_filename = (char*) malloc(filename_len + 3);
     strcpy(obj_filename, filename);
     memcpy(obj_filename, "obj", 3);
     memcpy(obj_filename + filename_len, ".o\0", 3);
     char *err_options = (cfg->warnerror) ? " -Wall -Werror" : "";
-    sprintf(buf, "%s -I include -c %s -o %s -O%c%s", cfg->compiler, filename, obj_filename, opt_level, err_options);
+    char *ccflags = (cfg->ccflags) ? cfg->ccflags : "";
+    sprintf(buf, "%s -I include -c %s -o %s -O%c%s%s", cfg->compiler, filename, obj_filename, opt_level, err_options, ccflags);
     printf(" -> %s\n", buf);
     // TODO: Stop recalculating string lengths
     *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);
@@ -114,9 +117,12 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     size_t link_cmd_len = strlen(cfg.packages) + strlen(cfg.compiler) + strlen(" -o target// ") + strlen(output_dir) + strlen(cfg.project_name) + strlen(linker_list) + 3;
     if (cfg.freestanding)
         link_cmd_len += strlen("-ffreestanding -nostdlib");
+    if (cfg.ldflags)
+        link_cmd_len += strlen(cfg.ldflags) + 1;
     char *link_cmd = (char*) malloc(link_cmd_len);
     char *freestanding_flags = (cfg.freestanding) ? "-ffreestanding -nostdlib" : "";
-    snprintf(link_cmd, link_cmd_len, "%s -o target/%s/%s %s%s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags, cfg.packages);
+    char *ldflags = (cfg.ldflags) ? cfg.ldflags : "";
+    snprintf(link_cmd, link_cmd_len, "%s -o target/%s/%s %s%s%s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags, cfg.packages, ldflags);
     printf(" -> %s\n", link_cmd);
     system(link_cmd);
     free(link_cmd);
