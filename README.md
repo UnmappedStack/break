@@ -59,6 +59,7 @@ version = "0.0.1"
 edition = "2024"
 compiler = "gcc"
 freestanding = "false"
+warnerror = "true" # enabling makes the compiler use `-Wall -Werror`
 ```
 The compiler that you use must allow GCC-like command line arguments. I personally recommend Clang.
 
