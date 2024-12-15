@@ -57,6 +57,8 @@ There are a few basic commands you can use with `break`:
 #### Writing a `break.toml`
 `break` has a *very basic* TOML parser. Note that it is far from complete and lacks many TOML features. This is a list of all the options, hopefully you can learn from example:
 ```toml
+# You can use comments like this etc, the same as any other TOML file.
+
 [package]
 name = "testproject"
 version = "0.0.1"
@@ -64,8 +66,13 @@ edition = "2024"
 compiler = "gcc"
 freestanding = "false"
 warnerror = "true" # enabling makes the compiler use `-Wall -Werror`
+
+[dependencies]
+lcurl = "The libcurl package"
 ```
 The compiler that you use must allow GCC-like command line arguments. I personally recommend Clang.
+
+`break` ignores the value on the right in the dependencies and only cares about the name of the package, so you can put anything in the value. In the example above, it sets the value to a brief description of the package which is what I recommend doing. Package names are in the same format as how you would pass them to GCC or Clang - starting with an `l` then the name of the package. It must already be installed on your system.
 
 ## License
 

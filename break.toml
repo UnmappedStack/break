@@ -4,3 +4,6 @@ version = "0.0.1"
 edition = "2024"
 compiler = "clang"
 warnerror = "true"
+
+[dependencies]
+# break doesn't require any dependencies
