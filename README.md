@@ -38,7 +38,7 @@ There are a few basic commands you can use with `break`:
     ```bash
     breakpkg new testprojectname
     ```
-- Build the project with `breakpkg build`. You can also use `--release` to output a release version of the executable, which will have optimisation. This will output the executable to `target/release/[projectname]` or `target/debug/[projectname]`, depending on whether or not you use `--release`.
+- Build the project with `breakpkg build`. You can also use `--release` to output a release version of the executable, which will have optimisation. This will output the executable to `target/release/[projectname]` or `target/debug/[projectname]`, depending on whether or not you use `--release`. There's also an `--install` flag which will tell `break` to copy the built executable to `/usr/bin` once it's finished compiling.
     ```bash
     breakpkg build
     # OR #

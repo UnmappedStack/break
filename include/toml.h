@@ -12,6 +12,7 @@ typedef struct {
     char *packages;
     char *ccflags;
     char *ldflags;
+    bool install;
 } ConfigFile;
 
 ConfigFile parse_toml(char *contents);

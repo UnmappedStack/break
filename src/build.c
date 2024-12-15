@@ -93,6 +93,8 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     while (*args) {
         if (!strcmp(*args, "--release"))
             cfg.release = true;
+        if (!strcmp(*args, "--install"))
+            cfg.install = true;
         args++;
     }
     if (!cfg.compiler[0]) {
@@ -125,6 +127,15 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     snprintf(link_cmd, link_cmd_len, "%s -o target/%s/%s %s%s%s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags, cfg.packages, ldflags);
     printf(" -> %s\n", link_cmd);
     system(link_cmd);
+    if (cfg.install) {
+        size_t proj_name_len = strlen(cfg.project_name);
+        size_t src_size  = strlen("target//") + strlen(output_dir) + proj_name_len + 1;
+        size_t total_cmd_size = strlen("sudo cp ") + src_size + 1 + sizeof("/usr/bin");
+        char *cp_cmd = (char*) malloc(total_cmd_size);
+        snprintf(cp_cmd, total_cmd_size, "sudo cp target/%s/%s /usr/bin", output_dir, cfg.project_name);
+        printf(" -> %s\n", cp_cmd);
+        system(cp_cmd);
+    }
     free(link_cmd);
     free(cfg.project_name);
     free(cfg.packages);
