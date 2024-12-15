@@ -97,6 +97,13 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     mkdir("target", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir("target/release", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir("target/debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    printf(" -> Cleaning object files...\n");
+    // It takes a sacrifice of an arm and a half to delete a directory
+    // so for simplicity (and shitty code), just use the system() with `rm -rf`.
+    struct stat info;
+    stat("obj", &info);
+    if (info.st_mode & S_IFDIR)
+        system("rm -rf obj");
     mkdir("obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     char *linker_list = (char*) malloc(1);
     linker_list[0] = 0;
