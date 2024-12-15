@@ -34,7 +34,7 @@ void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
     size_t filename_len = strlen(filename);
     char *obj_filename = (char*) malloc(filename_len + 3);
     strcpy(obj_filename, filename);
-    strcpy(obj_filename, "obj");
+    memcpy(obj_filename, "obj", 3);
     strcpy(obj_filename + filename_len, ".o");
     Command cmd = cmd_new(cfg->compiler);
     char *args[] = {"-g",
@@ -50,10 +50,12 @@ void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
         cmd_args(&cmd, errargs);
     }
     if (cfg->ccflags) {
-        cmd_arg(&cmd, cfg->ccflags);
+        cmd_args_str(&cmd, cfg->ccflags);
     }
     cmd_print(&cmd);
     cmd_spawn(&cmd);
+    *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);
+    sprintf(*linker_list, "%s%s ", *linker_list, obj_filename);
     free(obj_filename);
 }
 
@@ -129,14 +131,15 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     char  *dest = (char*) malloc(dest_size);
     snprintf(dest, dest_size, "target/%s/%s", output_dir, cfg.project_name);
     Command ld_cmd = cmd_new(cfg.compiler);
-    char *ld_cmd_args[] = {"-o", dest, linker_list, cfg.packages, NULL};
+    cmd_args_str(&ld_cmd, linker_list);
+    char *ld_cmd_args[] = {"-o", dest, cfg.packages, NULL};
     cmd_args(&ld_cmd, ld_cmd_args);
     if (cfg.freestanding) {
         char *freestanding_args[] = {"-ffreestanding", "-nostdlib", NULL};
         cmd_args(&ld_cmd, freestanding_args);
     }
     if (cfg.ldflags)
-        cmd_arg(&ld_cmd, cfg.ldflags);
+        cmd_args_str(&ld_cmd, cfg.ldflags);
     cmd_print(&ld_cmd);
     cmd_spawn(&ld_cmd);
     if (cfg.install) {

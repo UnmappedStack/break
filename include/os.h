@@ -10,5 +10,6 @@ typedef struct {
 Command cmd_new(char *program);
 void cmd_arg(Command *cmd, char *arg);
 void cmd_args(Command *cmd, char *args[]);
+void cmd_args_str(Command *cmd, char *args);
 void cmd_print(Command *cmd);
 void cmd_spawn(Command *cmd);

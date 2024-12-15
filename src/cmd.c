@@ -28,6 +28,21 @@ void cmd_args(Command *cmd, char **args) {
         cmd_arg(cmd, *(args++));
 }
 
+void cmd_args_str(Command *cmd, char *args) {
+    if (*args == ' ') args++;
+    size_t start = 0;
+    size_t i = 0;
+    while (args[i]) {
+        if (args[i] == ' ') {
+            // handle spaces
+            args[i] = 0;
+            cmd_arg(cmd, &args[start]);
+            start = i + 1;
+        }
+        i++;
+    }
+}
+
 void cmd_print(Command *cmd) {
     printf(" -> ");
     for (size_t i = 0; i < cmd->argc; i++)
