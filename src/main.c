@@ -1,3 +1,4 @@
+#include <os.h>
 #include <run.h>
 #include <build.h>
 #include <toml.h>

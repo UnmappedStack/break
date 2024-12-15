@@ -32,7 +32,7 @@ int read_toml(ConfigFile *cfg) {
 void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
     char opt_level = (cfg->release) ? '2' : '0';
     size_t filename_len = strlen(filename);
-    size_t fmtlen = strlen(cfg->compiler) + strlen(" -I include -c ") + filename_len * 2 + strlen(" -o ") + 5;
+    size_t fmtlen = strlen(cfg->compiler) + strlen(" -g -I include -c ") + filename_len * 2 + strlen(" -o ") + 5;
     if (cfg->warnerror)
         fmtlen += strlen(" -Wall -Werror");
     if (cfg->ccflags)
@@ -44,7 +44,7 @@ void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
     memcpy(obj_filename + filename_len, ".o\0", 3);
     char *err_options = (cfg->warnerror) ? " -Wall -Werror" : "";
     char *ccflags = (cfg->ccflags) ? cfg->ccflags : "";
-    sprintf(buf, "%s -I include -c %s -o %s -O%c%s%s", cfg->compiler, filename, obj_filename, opt_level, err_options, ccflags);
+    sprintf(buf, "%s -g -I include -c %s -o %s -O%c%s%s", cfg->compiler, filename, obj_filename, opt_level, err_options, ccflags);
     printf(" -> %s\n", buf);
     // TODO: Stop recalculating string lengths
     *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);
