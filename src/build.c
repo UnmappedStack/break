@@ -92,8 +92,6 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     while (*args) {
         if (!strcmp(*args, "--release"))
             cfg.release = true;
-        if (!strcmp(*args, "--install"))
-            cfg.install = true;
         args++;
     }
     if (!cfg.compiler[0]) {
@@ -137,14 +135,6 @@ int build_project(char **args, ConfigFile *cfg_ret) {
         cmd_args_str(&ld_cmd, cfg.ldflags);
     cmd_print(&ld_cmd);
     cmd_spawn(&ld_cmd);
-    if (cfg.install) {
-        Command cp_cmd = cmd_new(         "sudo"    );
-                         cmd_arg(&cp_cmd, "cp"      );
-                         cmd_arg(&cp_cmd, dest      );
-                         cmd_arg(&cp_cmd, "/usr/bin");
-        cmd_print(&cp_cmd);
-        cmd_spawn(&cp_cmd);
-    }
     free(dest);
     free(cfg.project_name);
     free(cfg.packages);
