@@ -49,27 +49,3 @@ void cmd_print(Command *cmd) {
         printf("%s ", cmd->argv[i]);
     printf("\n");
 }
-
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/wait.h>
-void cmd_spawn(Command *cmd) {
-    pid_t pid = fork();
-    if (!pid) {
-        execvp(cmd->argv[0], cmd->argv);
-        exit(EXIT_FAILURE); // Failed to exec
-    } else {
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status) && WEXITSTATUS(status) == EXIT_FAILURE)  {
-            printf("Failed to execute \"%s\"\n", cmd->argv[0]);
-            exit(1);
-        } else if (WIFSIGNALED(status) || (WIFEXITED(status) && WEXITSTATUS(status))) exit(1);
-        for (size_t arg = 0; arg < cmd->argc; arg++)
-            free(cmd->argv[arg]);
-        free(cmd->argv);
-    }
-}
-#else
-#error "Sorry, currently only Linux is supported for break."
-#endif

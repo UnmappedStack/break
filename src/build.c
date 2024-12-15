@@ -1,10 +1,8 @@
 #include <os.h>
-#include <dirent.h>
 #include <string.h>
 #include <build.h>
 #include <toml.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <stdio.h>
 
 // Caller must do free on project_name ConfigFile entry
@@ -15,15 +13,10 @@ int read_toml(ConfigFile *cfg) {
         return 1;
     }
     fseek(f, 0, SEEK_END);
-    struct stat lenbuf;
-    if (fstat(fileno(f), &lenbuf) < 0) {
-        printf("fstat failed.\n");
-        fclose(f);
-        return 1;
-    }
+    size_t fsize = ftell(f);
     fseek(f, 0, SEEK_SET);
-    char *buf = (char*) malloc(lenbuf.st_size);
-    fread(buf, lenbuf.st_size, 1, f);
+    char *buf = (char*) malloc(fsize);
+    fread(buf, fsize, 1, f);
     *cfg = parse_toml(buf);
     free(buf);
     fclose(f);
@@ -60,14 +53,14 @@ void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
 }
 
 void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
-    DIR *dir = opendir(dirname);
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR) {
-            if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue;
-            size_t fmtlen = strlen(dirname) + strlen(entry->d_name) + 2;
+    Directory *dir = open_dir(dirname);
+    DirEntry *entry;
+    while ((entry = dir_iter(dir)) != NULL) {
+        if (entry->type == DIR_TYPE_DIR) {
+            if (!strcmp(entry->name, ".") || !strcmp(entry->name, "..")) continue;
+            size_t fmtlen = strlen(dirname) + strlen(entry->name) + 2;
             char *full_dir = (char*) malloc(fmtlen);
-            sprintf(full_dir, "%s/%s", dirname, entry->d_name);
+            sprintf(full_dir, "%s/%s", dirname, entry->name);
             char *full_dir_obj = (char*) malloc(fmtlen);
             strcpy(full_dir_obj, full_dir);
             memcpy(full_dir_obj, "obj", 3);
@@ -77,13 +70,14 @@ void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
             printf(" -> Exit directory: %s\n", full_dir);
             free(full_dir_obj);
             free(full_dir);
-        } else if (entry->d_type == DT_REG) {
-            size_t fmtlen = strlen(dirname) + strlen(entry->d_name) + 2;
+        } else if (entry->type == DIR_TYPE_REG) {
+            size_t fmtlen = strlen(dirname) + strlen(entry->name) + 2;
             char *full_filename = (char*) malloc(fmtlen);
-            sprintf(full_filename, "%s/%s", dirname, entry->d_name);
+            sprintf(full_filename, "%s/%s", dirname, entry->name);
             compile_file(cfg, full_filename, linker_list);
             free(full_filename);
         }
+        free(entry);
     }
 }
 
@@ -109,20 +103,21 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     char *output_dir = (cfg.release) ? "release" : "debug";
     makedir("target");
     makedir("target/release");
-    mkdir("target/debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    makedir("target/debug");
     printf(" -> Cleaning object files...\n");
     // It takes a sacrifice of an arm and a half to delete a directory
     // so for simplicity (and shitty code), just use `rm -rf`.
-    struct stat info;
-    stat("obj", &info);
-    if (info.st_mode & S_IFDIR) {
+    FILE *obj_dir = fopen("obj", "r");
+    if (obj_dir) {
         // TODO: Replace with a proper function for deleting a directory
         Command cmd = cmd_new(      "rm" );
                       cmd_arg(&cmd, "-rf");
                       cmd_arg(&cmd, "obj");
+        cmd_print(&cmd);
         cmd_spawn(&cmd);
+        fclose(obj_dir);
     }
-    mkdir("obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    makedir("obj");
     char *linker_list = (char*) malloc(1);
     linker_list[0] = 0;
     compile_dir(&cfg, "src", &linker_list);

@@ -1,11 +1,7 @@
-#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <init.h>
 #include <stdio.h>
-#include <dirent.h>
-#include <linux/limits.h>
-#include <sys/stat.h>
 #include <os.h>
 
 const char *configf_default = "[package]\n"
@@ -20,19 +16,12 @@ const char *mainc_default = "#include <stdio.h>\n\n"
                             "}\n";
 
 void init_project() {
-    DIR *dir = opendir(".");
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR &&
-           (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))) {
-            continue;
-        }
-        printf("Current directory is not empty, cannot create new project.\n");
+    if (is_dir_empty(".")) {
+        printf("Current directory is not empty, cannot initiate a new break project.\n");
         exit(1);
     }
     // Create break.toml
-    char *cwd_full = (char*) malloc(PATH_MAX);
-    getcwd(cwd_full, PATH_MAX);
+    char *cwd_full = get_current_dir();
     char *cwd = cwd_full + strlen(cwd_full) - 1;
     while (*cwd && cwd[-1] != '/') cwd--;
     FILE *config_file = fopen("break.toml", "w");
@@ -62,9 +51,9 @@ void new_project(char **argv) {
         exit(1);
     }
     makedir(*argv);
-    chdir(*argv);
+    change_current_dir(*argv);
     init_project();
-    chdir("..");
+    change_current_dir("..");
 }
 
 
