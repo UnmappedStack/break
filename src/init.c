@@ -54,3 +54,19 @@ void init_project() {
     printf("Successfully created new project in current directory called \"%s\".\n", cwd);
     free(cwd_full);
 }
+
+void new_project(char **argv) {
+    if (!*argv) {
+        printf("Project name not specified.\n");
+        exit(1);
+    }
+    mkdir(*argv, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    chdir(*argv);
+    init_project();
+    chdir("..");
+}
+
+
+
+
+

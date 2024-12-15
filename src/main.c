@@ -7,12 +7,13 @@
 
 void help(char *path) {
     const char *commands[] = {
-            "%s init    -> creates a new break project in the current directory.\n",
-            "%s build   -> builds the program and outputs it to ./target/debug/program_name\n",
-            "%s run     -> builds the program and runs it\n",
-            "%s runonly -> runs the program without rebuilding it\n",
-            "%s version -> display version information\n",
-            "%s help    -> shows this help information\n\n",
+            "%s init               -> creates a new break project in the current directory.\n",
+            "%s new [projectname]  -> creates a new break project in a new directory.\n",
+            "%s build              -> builds the program and outputs it to ./target/debug/program_name\n",
+            "%s run                -> builds the program and runs it\n",
+            "%s runonly            -> runs the program without rebuilding it\n",
+            "%s version            -> display version information\n",
+            "%s help               -> shows this help information\n\n",
     };
     printf("Usage:\n");
     size_t num_commands = sizeof(commands) / sizeof(commands[0]);
@@ -31,6 +32,8 @@ int run_command(char *path, char *cmd, char **args) {
         return build_project(args, NULL);
     else if (!strcmp(cmd, "init"))
         init_project();
+    else if (!strcmp(cmd, "new"))
+        new_project(args);
     else if (!strcmp(cmd, "run"))
         build_and_run(args);
     else if (!strcmp(cmd, "runonly"))
