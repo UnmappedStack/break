@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <linux/limits.h>
 #include <sys/stat.h>
+#include <os.h>
 
 const char *configf_default = "[package]\n"
                               "name = \"%s\"\n"
@@ -43,7 +44,7 @@ void init_project() {
     fprintf(config_file, configf_default, cwd);
     fclose(config_file);
     // Create src/main.c
-    mkdir("src", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    makedir("src");
     FILE *mainc_file = fopen("src/main.c", "w");
     if (!mainc_file) {
         printf("Failed to open src/main.c.\n");
@@ -60,7 +61,7 @@ void new_project(char **argv) {
         printf("Project name not specified.\n");
         exit(1);
     }
-    mkdir(*argv, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    makedir(*argv);
     chdir(*argv);
     init_project();
     chdir("..");

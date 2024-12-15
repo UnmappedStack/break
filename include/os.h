@@ -13,3 +13,5 @@ void cmd_args(Command *cmd, char *args[]);
 void cmd_args_str(Command *cmd, char *args);
 void cmd_print(Command *cmd);
 void cmd_spawn(Command *cmd);
+
+void makedir(char *path);

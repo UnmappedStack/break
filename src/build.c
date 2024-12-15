@@ -71,7 +71,7 @@ void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
             char *full_dir_obj = (char*) malloc(fmtlen);
             strcpy(full_dir_obj, full_dir);
             memcpy(full_dir_obj, "obj", 3);
-            mkdir(full_dir_obj, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            makedir(full_dir_obj);
             printf(" -> Enter directory: %s\n", full_dir);
             compile_dir(cfg, full_dir, linker_list);
             printf(" -> Exit directory: %s\n", full_dir);
@@ -107,8 +107,8 @@ int build_project(char **args, ConfigFile *cfg_ret) {
         return 1;
     }
     char *output_dir = (cfg.release) ? "release" : "debug";
-    mkdir("target", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    mkdir("target/release", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    makedir("target");
+    makedir("target/release");
     mkdir("target/debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     printf(" -> Cleaning object files...\n");
     // It takes a sacrifice of an arm and a half to delete a directory
