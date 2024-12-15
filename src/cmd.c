@@ -23,6 +23,11 @@ void cmd_arg(Command *cmd, char *arg) {
     cmd->argv[++cmd->argc] = NULL;
 }
 
+void cmd_args(Command *cmd, char **args) {
+    while (*args)
+        cmd_arg(cmd, *(args++));
+}
+
 void cmd_print(Command *cmd) {
     printf(" -> ");
     for (size_t i = 0; i < cmd->argc; i++)

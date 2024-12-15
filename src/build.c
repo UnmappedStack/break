@@ -1,3 +1,4 @@
+#include <os.h>
 #include <dirent.h>
 #include <string.h>
 #include <build.h>
@@ -30,28 +31,30 @@ int read_toml(ConfigFile *cfg) {
 }
 
 void compile_file(ConfigFile *cfg, char *filename, char **linker_list) {
-    char opt_level = (cfg->release) ? '2' : '0';
     size_t filename_len = strlen(filename);
-    size_t fmtlen = strlen(cfg->compiler) + strlen(" -g -I include -c ") + filename_len * 2 + strlen(" -o ") + 5;
-    if (cfg->warnerror)
-        fmtlen += strlen(" -Wall -Werror");
-    if (cfg->ccflags)
-        fmtlen += strlen(cfg->ccflags) + 2;
-    char *buf = (char*) malloc(fmtlen);
     char *obj_filename = (char*) malloc(filename_len + 3);
     strcpy(obj_filename, filename);
-    memcpy(obj_filename, "obj", 3);
-    memcpy(obj_filename + filename_len, ".o\0", 3);
-    char *err_options = (cfg->warnerror) ? " -Wall -Werror" : "";
-    char *ccflags = (cfg->ccflags) ? cfg->ccflags : "";
-    sprintf(buf, "%s -g -I include -c %s -o %s -O%c%s%s", cfg->compiler, filename, obj_filename, opt_level, err_options, ccflags);
-    printf(" -> %s\n", buf);
-    // TODO: Stop recalculating string lengths
-    *linker_list = realloc(*linker_list, strlen(*linker_list) + strlen(obj_filename) + 3);
-    sprintf(*linker_list, "%s%s ", *linker_list, obj_filename);
-    system(buf);
+    strcpy(obj_filename, "obj");
+    strcpy(obj_filename + filename_len, ".o");
+    Command cmd = cmd_new(cfg->compiler);
+    char *args[] = {"-g",
+                    "-Iinclude",
+                    "-c", filename,
+                    "-o", obj_filename,
+                    NULL};
+    cmd_args(&cmd, args);
+    if (cfg->release)
+        cmd_arg(&cmd, "-O2");
+    if (cfg->warnerror) {
+        char *errargs[] = {"-Wall", "-Werror", NULL};
+        cmd_args(&cmd, errargs);
+    }
+    if (cfg->ccflags) {
+        cmd_arg(&cmd, cfg->ccflags);
+    }
+    cmd_print(&cmd);
+    cmd_spawn(&cmd);
     free(obj_filename);
-    free(buf);
 }
 
 void compile_dir(ConfigFile *cfg, char *dirname, char **linker_list) {
@@ -107,36 +110,44 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     mkdir("target/debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     printf(" -> Cleaning object files...\n");
     // It takes a sacrifice of an arm and a half to delete a directory
-    // so for simplicity (and shitty code), just use the system() with `rm -rf`.
+    // so for simplicity (and shitty code), just use `rm -rf`.
     struct stat info;
     stat("obj", &info);
-    if (info.st_mode & S_IFDIR)
-        system("rm -rf obj");
+    if (info.st_mode & S_IFDIR) {
+        // TODO: Replace with a proper function for deleting a directory
+        Command cmd = cmd_new(      "rm" );
+                      cmd_arg(&cmd, "-rf");
+                      cmd_arg(&cmd, "obj");
+        cmd_spawn(&cmd);
+    }
     mkdir("obj", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     char *linker_list = (char*) malloc(1);
     linker_list[0] = 0;
     compile_dir(&cfg, "src", &linker_list);
-    size_t link_cmd_len = strlen(cfg.packages) + strlen(cfg.compiler) + strlen(" -o target// ") + strlen(output_dir) + strlen(cfg.project_name) + strlen(linker_list) + 3;
-    if (cfg.freestanding)
-        link_cmd_len += strlen("-ffreestanding -nostdlib");
-    if (cfg.ldflags)
-        link_cmd_len += strlen(cfg.ldflags) + 1;
-    char *link_cmd = (char*) malloc(link_cmd_len);
-    char *freestanding_flags = (cfg.freestanding) ? "-ffreestanding -nostdlib" : "";
-    char *ldflags = (cfg.ldflags) ? cfg.ldflags : "";
-    snprintf(link_cmd, link_cmd_len, "%s -o target/%s/%s %s%s%s%s", cfg.compiler, output_dir, cfg.project_name, linker_list, freestanding_flags, cfg.packages, ldflags);
-    printf(" -> %s\n", link_cmd);
-    system(link_cmd);
-    if (cfg.install) {
-        size_t proj_name_len = strlen(cfg.project_name);
-        size_t src_size  = strlen("target//") + strlen(output_dir) + proj_name_len + 1;
-        size_t total_cmd_size = strlen("sudo cp ") + src_size + 1 + sizeof("/usr/bin");
-        char *cp_cmd = (char*) malloc(total_cmd_size);
-        snprintf(cp_cmd, total_cmd_size, "sudo cp target/%s/%s /usr/bin", output_dir, cfg.project_name);
-        printf(" -> %s\n", cp_cmd);
-        system(cp_cmd);
+    size_t proj_name_len = strlen(cfg.project_name);
+    size_t dest_size  = strlen("target//") + strlen(output_dir) + proj_name_len + 1;
+    char  *dest = (char*) malloc(dest_size);
+    snprintf(dest, dest_size, "target/%s/%s", output_dir, cfg.project_name);
+    Command ld_cmd = cmd_new(cfg.compiler);
+    char *ld_cmd_args[] = {"-o", dest, linker_list, cfg.packages, NULL};
+    cmd_args(&ld_cmd, ld_cmd_args);
+    if (cfg.freestanding) {
+        char *freestanding_args[] = {"-ffreestanding", "-nostdlib", NULL};
+        cmd_args(&ld_cmd, freestanding_args);
     }
-    free(link_cmd);
+    if (cfg.ldflags)
+        cmd_arg(&ld_cmd, cfg.ldflags);
+    cmd_print(&ld_cmd);
+    cmd_spawn(&ld_cmd);
+    if (cfg.install) {
+        Command cp_cmd = cmd_new(         "sudo"    );
+                         cmd_arg(&cp_cmd, "cp"      );
+                         cmd_arg(&cp_cmd, dest      );
+                         cmd_arg(&cp_cmd, "/usr/bin");
+        cmd_print(&cp_cmd);
+        cmd_spawn(&cp_cmd);
+    }
+    free(dest);
     free(cfg.project_name);
     free(cfg.packages);
     if (cfg.ccflags) free(cfg.ccflags);
