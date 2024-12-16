@@ -36,3 +36,4 @@ char *get_current_dir();
 void change_current_dir(char *path);
 Directory *open_dir(char *path);
 DirEntry *dir_iter(Directory *dir);
+void rmrf(char *path);

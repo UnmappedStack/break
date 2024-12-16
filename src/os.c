@@ -5,8 +5,10 @@
 #include <stdio.h>
 
 #ifdef __linux__
+#define _XOPEN_SOURCE 500
 #include <errno.h>
 #include <sys/stat.h>
+#include <ftw.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
@@ -85,6 +87,39 @@ void cmd_spawn(Command *cmd) {
             free(cmd->argv[arg]);
         free(cmd->argv);
     }
+}
+
+void rmrf(char *path) {
+    DIR *dir = opendir(path);
+    if (!dir) {
+        printf("Couldn't open directory to delete it: %s\n", path);
+        exit(1);
+    }
+    struct dirent *entry;
+    size_t path_len = strlen(path);
+    while ((entry = readdir(dir)) > 0) {
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue;
+        size_t this_path_len = path_len + strlen(entry->d_name) + 3;
+        char *this_path = malloc(this_path_len);
+        snprintf(this_path, this_path_len, "%s/%s", path, entry->d_name);
+        struct stat statbuf;
+        stat(this_path, &statbuf);
+        if (S_ISDIR(statbuf.st_mode)) {
+            rmrf(this_path);
+            free(this_path);
+            continue;
+        }
+        if (unlink(this_path)) {
+            printf("Couldn't delete %s\n", this_path);
+            exit(1);
+        }
+        free(this_path);
+    }
+    if (rmdir(path)) {
+        printf("Couldn't delete directory %s\n", path);
+        exit(1);
+    }
+    closedir(dir);
 }
 #else
 #error "Sorry, currently only Linux is supported for break."

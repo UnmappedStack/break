@@ -102,18 +102,10 @@ int build_project(char **args, ConfigFile *cfg_ret) {
     makedir("target");
     makedir("target/release");
     makedir("target/debug");
-    printf(" -> Cleaning object files...\n");
-    // It takes a sacrifice of an arm and a half to delete a directory
-    // so for simplicity (and shitty code), just use `rm -rf`.
     FILE *obj_dir = fopen("obj", "r");
     if (obj_dir) {
-        // TODO: Replace with a proper function for deleting a directory
-        Command cmd = cmd_new(      "rm" );
-                      cmd_arg(&cmd, "-rf");
-                      cmd_arg(&cmd, "obj");
-        cmd_print(&cmd);
-        cmd_spawn(&cmd);
-        fclose(obj_dir);
+        printf(" -> Cleaning object files...\n");
+        rmrf("obj");
     }
     makedir("obj");
     char *linker_list = (char*) malloc(1);
